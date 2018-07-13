@@ -8,34 +8,131 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
+#include <string.h>
 
 #define MAX 4
+#define INPUTSZ 100
 
-void genRandNum(int const MINNUM, int const MAXNUM, char *rNum);
+/*Check user's input*/
+void usrInValidation(char *usrInput, int *val);
+/*Flush out excess stdin buffer*/
+void clean_stdin(void);
+/*Compare user's input to answer*/
 void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win);
+/*Generate randum number*/
+void genRandNum(int const MAXNUM, char *rNum);
 
 int main(void)
 {
-    char randNum[MAX] = "0000", usrInput[MAX];
-    int guesses = 0, winner = 0;
+    char randNum[MAX] = "0000", usrInput[INPUTSZ];
+    int guesses = 0, winner = 0, valid;
 
-    genRandNum(1, 9, randNum);
+    genRandNum(10, randNum);
     printf("random %s\n", randNum);
 
     while(!winner)
     {
         printf("Guess a number: ");
-        fgets(usrInput, MAX+2, stdin);
-        checkChoice(usrInput, randNum, &guesses, &winner);
+        usrInValidation(usrInput, &valid);
+
+        switch(valid)
+        {
+            case 0:
+            {
+                checkChoice(usrInput, randNum, &guesses, &winner);
+                break;
+            }
+            case 1:
+            {
+                printf("Too many digits or non digit found.\n");
+                break;
+            }
+            case 2:
+            {
+                printf("Too few digits or non digit found.\n");
+                break;
+            }
+            default:
+            {
+                printf("Not valid input. Try again.\n");
+            }
+        }
     }
 
     return 0;
 }
 
+void usrInValidation(char *usrInput, int *val)
+{
+    /*Check user input*/
+
+    int s = 0;
+    char c = 0;
+
+    *val = 0;
+
+    while ((c = getchar()) != '\n')
+    {
+        if (isdigit(c))
+        {
+            usrInput[s++] = c;
+        }
+        
+        if (6 < s || isalpha(c))
+        {
+            /* Too many digits and must flush out buffer
+            * to prevent unwanted output.
+            */
+            clean_stdin();
+            break;
+        }
+    }
+
+    if (4 < s)
+    {
+        *val = 1;
+    }
+    else if (4 > s)
+    {
+        *val = 2;
+    }
+    else if (4 == s)
+    {
+        for (int i = 0; i < MAX; i++)
+        {
+            for (int j = i + 1; j < MAX; j++)
+            {
+                if (usrInput[i] == usrInput[j])
+                {
+                    *val = 3;
+                    break;
+                }
+            }
+
+            if (0 != *val)
+            {
+                break;
+            }
+        }
+    }
+}
+
+void clean_stdin(void)
+{
+    /*Flush out buffer*/
+
+    int c = getchar();
+    while (c != '\n' && c != EOF)
+    {
+        c = getchar();
+    }
+}
+
 void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win)
 {
-    /*Validate user input*/
-    
+    /*Determine how many red or white numbers guessed*/
+
     int white = 0, red = 0;
     
     (*guesses)++;
@@ -54,9 +151,10 @@ void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win)
     {
         for (int j = 0; j < MAX; j++)
         {
-            if (usrInput[i] == rNum[j])
+            if (rNum[i] == usrInput[j])
             {
                 white++;
+                break;
             }
         }
     }
@@ -81,7 +179,7 @@ void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win)
     }
 }
 
-void genRandNum(int const MINNUM, int const MAXNUM, char *rNum)
+void genRandNum(int const MAXNUM, char *rNum)
 {
     /*Generate a random 4 digit number 1111 - 9999*/
 
@@ -90,7 +188,7 @@ void genRandNum(int const MINNUM, int const MAXNUM, char *rNum)
 
     while (totalNum < MAX)
     {
-        randN = (rand() % (MAXNUM - MINNUM)) + MINNUM;
+        randN = (rand() % MAXNUM);
         num[totalNum] = randN;
         totalNum++;
 
