@@ -10,31 +10,37 @@
 #include <time.h>
 #include <ctype.h>
 #include <string.h>
+#include <unistd.h>
 
 #define MAX 4
 #define INPUTSZ 100
+#define FILENAME ".mm"
 
 /*Check user's input*/
-void usrInValidation(char *usrInput, int *val);
+void usrInValidation(char *usrInput, int *val, char *pRepeat);
 /*Flush out excess stdin buffer*/
 void clean_stdin(void);
 /*Compare user's input to answer*/
 void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win);
 /*Generate randum number*/
-void genRandNum(int const MAXNUM, char *rNum);
+void genRandNum(int const MAXNUM, char *rNum, char *pRepeat);
+/*Parse CLI arguements*/
+void argParse(int const argc, char *argv[], char *pRepeat);
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    char randNum[MAX] = "0000", usrInput[INPUTSZ];
+    char randNum[MAX] = "0000", usrInput[INPUTSZ], repeat = 0;
     int guesses = 0, winner = 0, valid;
 
-    genRandNum(10, randNum);
+
+    argParse(argc, argv, &repeat);
+    genRandNum(10, randNum, &repeat);
     printf("random %s\n", randNum);
 
     while(!winner)
     {
         printf("Guess a number: ");
-        usrInValidation(usrInput, &valid);
+        usrInValidation(usrInput, &valid, &repeat);
 
         switch(valid)
         {
@@ -63,7 +69,7 @@ int main(void)
     return 0;
 }
 
-void usrInValidation(char *usrInput, int *val)
+void usrInValidation(char *usrInput, int *val, char *pRepeat)
 {
     /*Check user input*/
 
@@ -79,7 +85,7 @@ void usrInValidation(char *usrInput, int *val)
             usrInput[s++] = c;
         }
         
-        if (6 < s || isalpha(c))
+        if (6 < s || !(isdigit(c)))
         {
             /* Too many digits and must flush out buffer
             * to prevent unwanted output.
@@ -97,7 +103,7 @@ void usrInValidation(char *usrInput, int *val)
     {
         *val = 2;
     }
-    else if (4 == s)
+    else if (4 == s && !(*pRepeat))
     {
         for (int i = 0; i < MAX; i++)
         {
@@ -179,7 +185,7 @@ void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win)
     }
 }
 
-void genRandNum(int const MAXNUM, char *rNum)
+void genRandNum(int const MAXNUM, char *rNum, char *pRepeat)
 {
     /*Generate a random 4 digit number 1111 - 9999*/
 
@@ -192,15 +198,53 @@ void genRandNum(int const MAXNUM, char *rNum)
         num[totalNum] = randN;
         totalNum++;
 
-        for (int i = 0; i < totalNum - 1; i++)
+        if (!(*pRepeat))
         {
-            if (randN == num[i])
+            for (int i = 0; i < totalNum - 1; i++)
             {
-                totalNum--;
-                break;
+                if (randN == num[i])
+                {
+                    totalNum--;
+                    break;
+                }
             }
         }
     }
     
     sprintf(rNum, "%d%d%d%d", num[0], num[1], num[2], num[3]);
+}
+
+void argParse(int const argc, char *argv[], char *pRepeat)
+{
+    int opt;
+    opterr = 0;
+
+    while ((opt = getopt(argc, argv, "rh")) != -1)
+    {
+        switch (opt)
+        {
+            case 'r':
+            {   
+                *pRepeat = 1;
+                break;
+            }
+            case 'h':
+            {
+                printf("-r: allow repeating digits\n");
+                exit(0);
+            }
+            case '?':
+            default:
+            {
+                fprintf(stderr, "Unknown option %c -- use -h\n", optopt);
+            }
+        }
+    }
+
+    for (int index = optind; index < argc; index++)
+    {
+        printf ("Non-option argument %s\n", argv[index]);
+        exit(1);
+    }
+      
 }
