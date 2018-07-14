@@ -18,8 +18,6 @@
 
 /*Check user's input*/
 void validation(char *input, char *number, int *val, int *pRepeat);
-/*Flush out excess stdin buffer*/
-void clean_stdin(void);
 /*Compare user's input to answer*/
 void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win);
 /*Generate randum number*/
@@ -31,8 +29,10 @@ int main(int argc, char *argv[])
 {
     char randNum[MAX], *input = NULL, guess[MAX];
     int guesses = 0, winner = 0, valid = 0, repeat = 0;
+    double totalTime = 0;
     FILE *pFile;
     size_t size;
+    time_t begin, end;
 
     argParse(argc, argv, &repeat);
 
@@ -55,7 +55,10 @@ int main(int argc, char *argv[])
 
     while(!winner)
     {
+        begin = time(NULL);
+
         printf("Guess a number: ");
+
         if(getline(&input, &size, stdin) != -1)
         {
             input[strlen(input)-1] = 0;
@@ -67,16 +70,8 @@ int main(int argc, char *argv[])
             case 0:
             {
                 checkChoice(guess, randNum, &guesses, &winner);
-                break;
-            }
-            case 1:
-            {
-                printf("Too many digits or non digit found.\n");
-                break;
-            }
-            case 2:
-            {
-                printf("Too few digits or non digit found.\n");
+                end = time(NULL);
+                totalTime += difftime(end, begin);
                 break;
             }
             case 3:
@@ -86,10 +81,12 @@ int main(int argc, char *argv[])
             }
             default:
             {
-                printf("Not valid input. Try again.\n");
+                printf("Not valid input. Must be 4 digits only.\n");
             }
         }
     }
+
+    printf("Average time per guess %.2f seconds\n", totalTime / guesses);
 
     return 0;
 }
@@ -105,7 +102,15 @@ void validation(char *input, char *number, int *val, int *pRepeat)
     {
         for (int i = 0; i < s; i++)
         {
-            number[i] = input[i];
+            if ('0' <= input[i] && '9' >= input[i])
+            {
+                number[i] = input[i];
+            }
+            else
+            {
+                *val = 5;
+                break;
+            }
         }
     }
     else if (4 < s)
@@ -135,17 +140,6 @@ void validation(char *input, char *number, int *val, int *pRepeat)
                 break;
             }
         }
-    }
-}
-
-void clean_stdin(void)
-{
-    /*Flush out buffer*/
-
-    int c = getchar();
-    while (c != '\n' && c != EOF)
-    {
-        c = getchar();
     }
 }
 
