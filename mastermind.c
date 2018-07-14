@@ -17,15 +17,34 @@
 #define FILENAME ".mm"
 
 /*Check user's input*/
-void validation(char *input, char *number, int *val, int *pRepeat);
-/*Compare user's input to answer*/
-void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win);
-/*Generate randum number*/
-void genRandNum(int const MAXNUM, char *rNum, int *pRepeat);
-/*Parse CLI arguements*/
-void argParse(int const argc, char *argv[], int *pRepeat);
+void validation(
+    char *input,
+    char *number,
+    int *val,
+    int *pRepeat);
 
-int main(int argc, char *argv[])
+/*Compare user's input to answer*/
+void checkChoice(
+    char *usrInput,
+    char const *rNum,
+    int *guesses,
+    int *win);
+
+/*Generate randum number*/
+void genRandNum(
+    int const MAXNUM,
+    char *rNum,
+    int *pRepeat);
+
+/*Parse CLI arguements*/
+void argParse(
+    int const argc,
+    char *argv[],
+    int *pRepeat);
+
+int main(
+    int argc,
+    char *argv[])
 {
     char randNum[MAX], *input = NULL, guess[MAX];
     int guesses = 0, winner = 0, valid = 0, repeat = 0;
@@ -38,34 +57,34 @@ int main(int argc, char *argv[])
 
     pFile = fopen(FILENAME, "r");
 
-    if(NULL != pFile)
+    if (NULL != pFile)
     {
-        if (getline(&input, &size, pFile) != -1)
+        if (-1 != getline(&input, &size, pFile))
         {
-            input[strlen(input)-1] = 0;
+            input[strlen(input) - 1] = 0;
             validation(input, randNum, &valid, &repeat);
         }
         fclose(pFile);
     }
 
-    if (valid || !(NULL !=pFile))
+    if (valid || !(NULL != pFile))
     {
         genRandNum(10, randNum, &repeat);
     }
 
-    while(!winner)
+    while (!winner)
     {
         begin = time(NULL);
 
         printf("Guess a number: ");
 
-        if(getline(&input, &size, stdin) != -1)
+        if (-1 != getline(&input, &size, stdin))
         {
-            input[strlen(input)-1] = 0;
+            input[strlen(input) - 1] = 0;
             validation(input, guess, &valid, &repeat);
         }
 
-        switch(valid)
+        switch (valid)
         {
             case 0:
             {
@@ -88,17 +107,25 @@ int main(int argc, char *argv[])
 
     printf("Average time per guess %.2f seconds\n", totalTime / guesses);
 
+    /*input was not being freed byitself, so done manually */
+    free(input);
+
     return 0;
 }
 
-void validation(char *input, char *number, int *val, int *pRepeat)
+void validation(
+    char *input,
+    char *number,
+    int *val,
+    int *pRepeat)
 {
-    /*Check user input*/
+    /*Check user input */
 
     int s = strlen(input);
+
     *val = 0;
 
-    if (s == 4)
+    if (4 == s)
     {
         for (int i = 0; i < s; i++)
         {
@@ -143,15 +170,19 @@ void validation(char *input, char *number, int *val, int *pRepeat)
     }
 }
 
-void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win)
+void checkChoice(
+    char *usrInput,
+    char const *rNum,
+    int *guesses,
+    int *win)
 {
-    /*Determine how many red or white numbers guessed*/
+    /*Determine how many red or white numbers guessed */
 
     int white = 0, red = 0;
-    
+
     (*guesses)++;
 
-    /*Count red matches*/
+    /*Count red matches */
     for (int i = 0; i < MAX; i++)
     {
         if (usrInput[i] == rNum[i])
@@ -160,7 +191,7 @@ void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win)
         }
     }
 
-    /*Count white matches*/
+    /*Count white matches */
     for (int i = 0; i < MAX; i++)
     {
         for (int j = 0; j < MAX; j++)
@@ -173,22 +204,7 @@ void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win)
         }
     }
 
-    if (red && (white - red))
-    {
-        printf("%d red, %d white\n", red, (white - red));
-    }
-    else if (red)
-    {
-        printf("%d red\n", red);
-    }
-    else if (white - red)
-    {
-        printf("%d white\n", (white - red));
-    }
-    else
-    {
-        printf("No matches...\n");
-    }
+    printf("%d red, %d white\n", red, (white - red));
 
     if (4 == red)
     {
@@ -197,11 +213,15 @@ void checkChoice(char *usrInput, char const *rNum, int *guesses, int *win)
     }
 }
 
-void genRandNum(int const MAXNUM, char *rNum, int *pRepeat)
+void genRandNum(
+    int const MAXNUM,
+    char *rNum,
+    int *pRepeat)
 {
-    /*Generate a random 4 digit number 1111 - 9999*/
+    /*Generate a random 4 digit number 1111 - 9999 */
 
     int randN, num[MAX], totalNum = 0;
+
     srand(time(NULL));
 
     while (totalNum < MAX)
@@ -222,13 +242,19 @@ void genRandNum(int const MAXNUM, char *rNum, int *pRepeat)
             }
         }
     }
-    
+
     sprintf(rNum, "%d%d%d%d", num[0], num[1], num[2], num[3]);
 }
 
-void argParse(int const argc, char *argv[], int *pRepeat)
+void argParse(
+    int const argc,
+    char *argv[],
+    int *pRepeat)
 {
+    /*Pare CLI arguments appropriatly */
+
     int opt;
+
     opterr = 0;
 
     while ((opt = getopt(argc, argv, "rh")) != -1)
@@ -236,7 +262,7 @@ void argParse(int const argc, char *argv[], int *pRepeat)
         switch (opt)
         {
             case 'r':
-            {   
+            {
                 *pRepeat = 1;
                 break;
             }
@@ -255,8 +281,8 @@ void argParse(int const argc, char *argv[], int *pRepeat)
 
     for (int index = optind; index < argc; index++)
     {
-        printf ("Non-option argument %s\n", argv[index]);
+        printf("Non-option argument %s\n", argv[index]);
         exit(1);
     }
-      
+
 }
