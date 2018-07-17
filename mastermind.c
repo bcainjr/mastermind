@@ -86,6 +86,7 @@ int main(
 
         switch (valid)
         {
+            // MDC: Should setup #defines or enum type for case selections
             case 0:
             {
                 checkChoice(guess, randNum, &guesses, &winner);
@@ -116,7 +117,11 @@ int main(
 void validation(
     char *input,
     char *number,
-    int *val,
+    int *val,           // MDC: Should comment range of returns for val
+                        //      and their meaning.  Wasn't sure at first
+                        //      glance whether "val" was abrreviation for
+                        //      "value of guess/secret" or "validity of
+                        //      guess/secret"
     int *pRepeat)
 {
     /*Check user input */
@@ -135,18 +140,18 @@ void validation(
             }
             else
             {
-                *val = 5;
+                *val = 5;     // MDC: 5 Means invalid character in input?
                 break;
             }
         }
     }
     else if (4 < s)
     {
-        *val = 1;
+        *val = 1;             // MDC: 1 means too few characters?
     }
     else if (4 > s)
     {
-        *val = 2;
+        *val = 2;             // MDC: 2 means too many characters?
     }
 
     if (!(*val) && !(*pRepeat))
@@ -192,17 +197,17 @@ void checkChoice(
     }
 
     /*Count white matches */
-    for (int i = 0; i < MAX; i++)
-    {
-        for (int j = 0; j < MAX; j++)
-        {
-            if (rNum[i] == usrInput[j])
-            {
-                white++;
-                break;
-            }
-        }
-    }
+    for (int i = 0; i < MAX; i++)       // MDC: The count white loop gives
+    {                                   //      too many hits sometimes when
+        for (int j = 0; j < MAX; j++)   //      repeats are allowed.  e.g.
+        {                               //      if last two digits in rNum
+            if (rNum[i] == usrInput[j]) //      are repeats and this digit
+            {                           //      is in first position of guess
+                white++;                //      it will count as white when
+                break;                  //      j == 2 and j == 3.
+            }                           //      test with rNum == 1488 and
+        }                               //      guess == 8037 it will increment
+    }                                   //      white when i == 2 and i == 3
 
     printf("%d red, %d white\n", red, (white - red));
 
